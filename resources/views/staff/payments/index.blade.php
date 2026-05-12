@@ -60,8 +60,12 @@
                 <td class="px-6 py-4 text-sm text-gray-600">{{ $payment->payment_date ? \Carbon\Carbon::parse($payment->payment_date)->format('M d, Y') : 'N/A' }}</td>
                 <td class="px-6 py-4">
                     <div class="flex gap-2">
-                        <a href="{{ route('staff.payments.show', $payment) }}" class="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-gray-200 transition">View</a>
-                        <a href="{{ route('staff.payments.edit', $payment) }}" class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-100 transition">Edit</a>
+
+                        <button
+                            type="button"
+                            onclick="openPaymentEditModal({{ $payment->id }}, '{{ $payment->type }}', '{{ $payment->amount }}', '{{ $payment->status }}', '{{ $payment->payment_date }}')"
+                            class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-100 transition">Edit</button>
+
                     </div>
                 </td>
             </tr>
@@ -74,4 +78,70 @@
     </table>
     <div class="p-4 border-t border-gray-100">{{ $payments->links() }}</div>
 </div>
+<!-- Payment Edit Modal -->
+<div id="paymentEditModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" style="display:none;">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-lg mx-4">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-lg font-bold text-gray-900">Edit Payment Record</h2>
+            <button type="button" onclick="closePaymentEditModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+        </div>
+
+        <form id="paymentEditForm" method="POST" action="" enctype="multipart/form-data">
+            @csrf @method('PUT')
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Type</label>
+                    <input type="text" name="type" id="edit_payment_type" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" required>
+                </div>
+
+                <div class="col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Amount</label>
+                    <input type="number" step="0.01" name="amount" id="edit_payment_amount" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" required>
+                </div>
+
+                <div class="col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Status</label>
+                    <input type="text" name="status" id="edit_payment_status" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" required>
+                </div>
+
+                <div class="col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Payment Date</label>
+                    <input type="date" name="payment_date" id="edit_payment_date" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                </div>
+            </div>
+
+            <div class="mt-6 flex gap-3">
+                <button type="submit" class="bg-gray-900 text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-700 transition">Save Changes</button>
+                <button type="button" onclick="closePaymentEditModal()" class="bg-gray-100 text-gray-800 px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-200 transition">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openPaymentEditModal(id, type, amount, status, paymentDate) {
+        document.getElementById('edit_payment_type').value = type || '';
+        document.getElementById('edit_payment_amount').value = amount || '';
+        document.getElementById('edit_payment_status').value = status || '';
+        document.getElementById('edit_payment_date').value = paymentDate || '';
+
+        document.getElementById('paymentEditForm').action = '/staff/payments/' + id;
+
+        const modal = document.getElementById('paymentEditModal');
+        modal.style.display = 'flex';
+        modal.classList.remove('hidden');
+    }
+
+    function closePaymentEditModal() {
+        const modal = document.getElementById('paymentEditModal');
+        modal.style.display = 'none';
+        modal.classList.add('hidden');
+    }
+
+    window.onclick = function(e) {
+        if (e.target.id === 'paymentEditModal') closePaymentEditModal();
+    };
+</script>
+
 @endsection

@@ -64,7 +64,7 @@
                 <td class="px-6 py-4 text-sm text-gray-600">{{ $inquiry->created_at->format('M d, Y') }}</td>
                 <td class="px-6 py-4">
                     <div class="flex gap-2">
-                        <a href="{{ route('admin.inquiries.show', $inquiry) }}" class="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-gray-200 transition">View</a>
+
                         <form method="POST" action="{{ route('admin.inquiries.destroy', $inquiry) }}" onsubmit="return confirm('Are you sure?')">
                             @csrf @method('DELETE')
                             <button class="bg-red-50 text-red-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-red-100 transition">Delete</button>

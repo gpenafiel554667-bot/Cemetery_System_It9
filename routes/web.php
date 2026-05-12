@@ -59,7 +59,14 @@ Route::middleware(['auth', 'staff'])->prefix('staff')->name('staff.')->group(fun
 
         $burialData = collect(range(1, 12))->map(fn($m) => $burialsPerMonth->get($m)?->count ?? 0);
 
-        return view('staff.dashboard', compact('totalDeceased', 'totalBurials', 'pendingInquiries', 'burialData'));
+        $lots = \App\Models\Lot::with('burial.deceased')
+            ->orderBy('section')
+            ->orderBy('row')
+            ->orderBy('lot_number')
+            ->get()
+            ->groupBy('section');
+
+        return view('staff.dashboard', compact('totalDeceased', 'totalBurials', 'pendingInquiries', 'burialData', 'lots'));
     })->name('dashboard');
 
     Route::resource('deceased', DeceasedController::class);
@@ -104,6 +111,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
         $paymentData = collect(range(1, 12))->map(fn($m) => $paymentsPerMonth->get($m)?->total ?? 0);
 
+        $lots = \App\Models\Lot::with('burial.deceased')
+            ->orderBy('section')
+            ->orderBy('row')
+            ->orderBy('lot_number')
+            ->get()
+            ->groupBy('section');
+
         return view('admin.dashboard', compact(
             'totalDeceased',
             'availableLots',
@@ -112,7 +126,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
             'totalBurials',
             'pendingInquiries',
             'burialData',
-            'paymentData'
+            'paymentData',
+            'lots'
         ));
     })->name('dashboard');
 

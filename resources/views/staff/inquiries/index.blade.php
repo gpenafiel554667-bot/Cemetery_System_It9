@@ -63,8 +63,12 @@
                 </td>
                 <td class="px-6 py-4 text-sm text-gray-600">{{ $inquiry->created_at->format('M d, Y') }}</td>
                 <td class="px-6 py-4">
-                    <a href="{{ route('staff.inquiries.show', $inquiry) }}" class="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-gray-200 transition">View</a>
+                    <button
+                        type="button"
+onclick="openDeleteModal({{ $inquiry->id }})"
+                        class="bg-red-50 text-red-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-red-100 transition">Delete</button>
                 </td>
+
             </tr>
             @empty
             <tr>
@@ -75,4 +79,48 @@
     </table>
     <div class="p-4 border-t border-gray-100">{{ $inquiries->links() }}</div>
 </div>
+<!-- Inquiry Delete Modal -->
+<!-- Delete Modal -->
+<div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" style="display:none;">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4 text-center">
+        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+        </div>
+        <h2 class="text-lg font-bold text-gray-900 mb-2">Delete Record</h2>
+        <p class="text-gray-500 text-sm mb-6">Are you sure you want to delete this inquiry? This action cannot be undone.</p>
+        <form id="deleteForm" method="POST" action="">
+            @csrf @method('DELETE')
+            <div class="flex gap-3 justify-center">
+                <button type="submit" class="bg-red-600 text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-red-700 transition">Yes, Delete</button>
+                <button type="button" onclick="closeDeleteModal()" class="bg-gray-100 text-gray-800 px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-200 transition">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openDeleteModal(id) {
+        const form = document.getElementById('deleteForm');
+        form.action = '/staff/inquiries/' + id;
+
+        const modal = document.getElementById('deleteModal');
+        modal.style.display = 'flex';
+        modal.classList.remove('hidden');
+    }
+
+    function closeDeleteModal() {
+        const modal = document.getElementById('deleteModal');
+        modal.style.display = 'none';
+        modal.classList.add('hidden');
+    }
+
+    window.onclick = function(e) {
+        if (e.target && e.target.id === 'deleteModal') {
+            closeDeleteModal();
+        }
+    };
+</script>
+
 @endsection

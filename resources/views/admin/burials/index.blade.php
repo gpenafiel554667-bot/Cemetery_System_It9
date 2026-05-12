@@ -52,12 +52,11 @@
                 <td class="px-6 py-4 text-sm text-gray-600 capitalize">{{ $burial->burial_type }}</td>
                 <td class="px-6 py-4">
                     <div class="flex gap-2">
-                        <a href="{{ route('admin.burials.show', $burial) }}" class="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-gray-200 transition">View</a>
-                        <a href="{{ route('admin.burials.edit', $burial) }}" class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-100 transition">Edit</a>
-                        <form method="POST" action="{{ route('admin.burials.destroy', $burial) }}" onsubmit="return confirm('Are you sure?')">
-                            @csrf @method('DELETE')
-                            <button class="bg-red-50 text-red-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-red-100 transition">Delete</button>
-                        </form>
+
+
+                        <button onclick="openEditBurialModal({{ $burial->id }}, '{{ $burial->burial_type }}', '{{ $burial->burial_date }}', {{ $burial->lot_id }})" class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-100 transition">Edit</button>
+                        <button onclick="openDeleteBurialModal({{ $burial->id }})" class="bg-red-50 text-red-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-red-100 transition">Delete</button>
+
                     </div>
                 </td>
             </tr>
@@ -70,4 +69,80 @@
     </table>
     <div class="p-4 border-t border-gray-100">{{ $burials->links() }}</div>
 </div>
+
+
+<!-- Edit Burial Modal -->
+<div id="editBurialModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" style="display:none;">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-lg mx-4">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-lg font-bold text-gray-900">Edit Burial</h2>
+            <button onclick="closeEditBurialModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+        </div>
+        <form id="editBurialForm" method="POST">
+            @csrf @method('PUT')
+            <div class="grid grid-cols-2 gap-4">
+                <div class="col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Burial Type</label>
+                    <input type="text" name="burial_type" id="edit_burial_type" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" required>
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Burial Date</label>
+                    <input type="date" name="burial_date" id="edit_burial_date" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" required>
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Lot ID</label>
+                    <input type="number" name="lot_id" id="edit_burial_lot_id" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" required>
+                </div>
+            </div>
+            <div class="mt-6 flex gap-3">
+                <button type="submit" class="bg-gray-900 text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-700 transition">Save Changes</button>
+                <button type="button" onclick="closeEditBurialModal()" class="bg-gray-100 text-gray-800 px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-200 transition">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Burial Modal -->
+<div id="deleteBurialModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" style="display:none;">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4 text-center">
+        <h2 class="text-lg font-bold text-gray-900 mb-2">Delete Burial</h2>
+        <p class="text-gray-500 text-sm mb-6">Are you sure you want to delete this burial record? This action cannot be undone.</p>
+        <form id="deleteBurialForm" method="POST">
+            @csrf @method('DELETE')
+            <div class="flex gap-3 justify-center">
+                <button type="submit" class="bg-red-600 text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-red-700 transition">Yes, Delete</button>
+                <button type="button" onclick="closeDeleteBurialModal()" class="bg-gray-100 text-gray-800 px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-200 transition">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openEditBurialModal(id, burialType, burialDate, lotId) {
+    document.getElementById('edit_burial_type').value = burialType;
+    document.getElementById('edit_burial_date').value = burialDate;
+    document.getElementById('edit_burial_lot_id').value = lotId;
+    document.getElementById('editBurialForm').action = '/admin/burials/' + id;
+    document.getElementById('editBurialModal').style.display = 'flex';
+}
+
+function closeEditBurialModal() {
+    document.getElementById('editBurialModal').style.display = 'none';
+}
+
+function openDeleteBurialModal(id) {
+    document.getElementById('deleteBurialForm').action = '/admin/burials/' + id;
+    document.getElementById('deleteBurialModal').style.display = 'flex';
+}
+
+function closeDeleteBurialModal() {
+    document.getElementById('deleteBurialModal').style.display = 'none';
+}
+
+window.onclick = function(e) {
+    if (e.target.id === 'editBurialModal') closeEditBurialModal();
+    if (e.target.id === 'deleteBurialModal') closeDeleteBurialModal();
+}
+</script>
+
 @endsection
