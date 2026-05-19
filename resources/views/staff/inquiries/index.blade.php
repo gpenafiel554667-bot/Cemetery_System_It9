@@ -65,8 +65,18 @@
                 <td class="px-6 py-4">
                     <button
                         type="button"
-onclick="openDeleteModal({{ $inquiry->id }})"
-                        class="bg-red-50 text-red-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-red-100 transition">Delete</button>
+                        onclick="openInquiryModal({
+                            id: {{ $inquiry->id }},
+                            name: @js($inquiry->name),
+                            email: @js($inquiry->email),
+                            contact: @js($inquiry->contact_number),
+                            message: @js($inquiry->message),
+                            status: @js($inquiry->status),
+                            response: @js($inquiry->response),
+                            createdAt: @js($inquiry->created_at->format('M d, Y h:i A')),
+                            respondedAt: @js($inquiry->responded_at?->format('M d, Y h:i A'))
+                        })"
+                        class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-100 transition">Manage</button>
                 </td>
 
             </tr>
@@ -79,48 +89,109 @@ onclick="openDeleteModal({{ $inquiry->id }})"
     </table>
     <div class="p-4 border-t border-gray-100">{{ $inquiries->links() }}</div>
 </div>
-<!-- Inquiry Delete Modal -->
-<!-- Delete Modal -->
-<div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" style="display:none;">
-    <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4 text-center">
-        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-            </svg>
-        </div>
-        <h2 class="text-lg font-bold text-gray-900 mb-2">Delete Record</h2>
-        <p class="text-gray-500 text-sm mb-6">Are you sure you want to delete this inquiry? This action cannot be undone.</p>
-        <form id="deleteForm" method="POST" action="">
-            @csrf @method('DELETE')
-            <div class="flex gap-3 justify-center">
-                <button type="submit" class="bg-red-600 text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-red-700 transition">Yes, Delete</button>
-                <button type="button" onclick="closeDeleteModal()" class="bg-gray-100 text-gray-800 px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-200 transition">Cancel</button>
+
+<!-- Inquiry Manage Modal -->
+<div id="inquiryModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" style="display:none;">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-start mb-5">
+            <div>
+                <h2 class="text-lg font-bold text-gray-900">Manage Inquiry</h2>
+                <p id="modal_created_at" class="text-xs text-gray-400 mt-1"></p>
             </div>
+            <button type="button" onclick="closeInquiryModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-5">
+            <div>
+                <p class="text-gray-500 text-sm">Name</p>
+                <p id="modal_name" class="font-semibold text-gray-800"></p>
+            </div>
+            <div>
+                <p class="text-gray-500 text-sm">Contact</p>
+                <p id="modal_contact" class="font-semibold text-gray-800"></p>
+            </div>
+            <div class="col-span-2">
+                <p class="text-gray-500 text-sm">Email</p>
+                <p id="modal_email" class="font-semibold text-gray-800"></p>
+            </div>
+            <div class="col-span-2">
+                <p class="text-gray-500 text-sm">Message</p>
+                <p id="modal_message" class="font-semibold text-gray-800 whitespace-pre-line mt-1"></p>
+            </div>
+            <div id="modal_responded_wrap" class="hidden">
+                <p class="text-gray-500 text-sm">Responded At</p>
+                <p id="modal_responded_at" class="font-semibold text-gray-800"></p>
+            </div>
+        </div>
+
+        <form id="inquiryUpdateForm" method="POST" class="border-t border-gray-100 pt-5">
+            @csrf @method('PUT')
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-1">Status</label>
+                    <select name="status" id="modal_status" class="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        <option value="pending">Pending</option>
+                        <option value="read">Read</option>
+                        <option value="responded">Responded</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-1">Reply Notes</label>
+                    <textarea name="response" id="modal_response" rows="5" class="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Type the response or action taken here..."></textarea>
+                </div>
+                <div class="flex flex-wrap gap-3 justify-between">
+                    <div class="flex gap-3">
+                        <button type="submit" class="bg-blue-900 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">Save</button>
+                        <button type="button" onclick="closeInquiryModal()" class="bg-gray-100 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-200 transition">Cancel</button>
+                    </div>
+                    <button type="button" onclick="submitInquiryDelete()" class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition">Delete</button>
+                </div>
+            </div>
+        </form>
+
+        <form id="inquiryDeleteForm" method="POST" class="hidden">
+            @csrf @method('DELETE')
         </form>
     </div>
 </div>
 
 <script>
-function openDeleteModal(id) {
-        const form = document.getElementById('deleteForm');
-        form.action = '/staff/inquiries/' + id;
+function openInquiryModal(inquiry) {
+    document.getElementById('modal_name').textContent = inquiry.name || 'N/A';
+    document.getElementById('modal_contact').textContent = inquiry.contact || 'N/A';
+    document.getElementById('modal_email').textContent = inquiry.email || 'N/A';
+    document.getElementById('modal_message').textContent = inquiry.message || '';
+    document.getElementById('modal_created_at').textContent = inquiry.createdAt ? 'Submitted ' + inquiry.createdAt : '';
+    document.getElementById('modal_status').value = inquiry.status || 'pending';
+    document.getElementById('modal_response').value = inquiry.response || '';
 
-        const modal = document.getElementById('deleteModal');
-        modal.style.display = 'flex';
-        modal.classList.remove('hidden');
+    const respondedWrap = document.getElementById('modal_responded_wrap');
+    document.getElementById('modal_responded_at').textContent = inquiry.respondedAt || '';
+    respondedWrap.classList.toggle('hidden', !inquiry.respondedAt);
+
+    document.getElementById('inquiryUpdateForm').action = '/staff/inquiries/' + inquiry.id;
+    document.getElementById('inquiryDeleteForm').action = '/staff/inquiries/' + inquiry.id;
+
+    const modal = document.getElementById('inquiryModal');
+    modal.style.display = 'flex';
+    modal.classList.remove('hidden');
+}
+
+function closeInquiryModal() {
+    const modal = document.getElementById('inquiryModal');
+    modal.style.display = 'none';
+    modal.classList.add('hidden');
+}
+
+function submitInquiryDelete() {
+    if (confirm('Delete this inquiry? This action cannot be undone.')) {
+        document.getElementById('inquiryDeleteForm').submit();
     }
+}
 
-    function closeDeleteModal() {
-        const modal = document.getElementById('deleteModal');
-        modal.style.display = 'none';
-        modal.classList.add('hidden');
-    }
-
-    window.onclick = function(e) {
-        if (e.target && e.target.id === 'deleteModal') {
-            closeDeleteModal();
-        }
-    };
+window.addEventListener('click', function(e) {
+    if (e.target && e.target.id === 'inquiryModal') closeInquiryModal();
+});
 </script>
 
 @endsection

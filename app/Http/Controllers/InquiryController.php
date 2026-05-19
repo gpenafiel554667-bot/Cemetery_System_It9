@@ -30,14 +30,14 @@ class InquiryController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'nullable|email|max:255',
             'contact_number' => 'required|string|max:255',
             'message' => 'required|string',
         ]);
 
-        Inquiry::create($request->all());
+        Inquiry::create($validated);
 
         return redirect()->route('home')->with('success', 'Inquiry sent successfully! We will contact you soon.');
     }
@@ -57,11 +57,19 @@ class InquiryController extends Controller
 
     public function update(Request $request, Inquiry $inquiry)
     {
-        $request->validate([
+        $validated = $request->validate([
             'status' => 'required|in:pending,read,responded',
+            'response' => 'nullable|string',
         ]);
 
-        $inquiry->update($request->all());
+        if (filled($validated['response'] ?? null)) {
+            $validated['status'] = 'responded';
+            $validated['responded_at'] = now();
+        } elseif (($validated['status'] ?? null) !== 'responded') {
+            $validated['responded_at'] = null;
+        }
+
+        $inquiry->update($validated);
 
         return redirect()->route($this->getRoute().'.inquiries.index')->with('success', 'Inquiry updated successfully!');
     }

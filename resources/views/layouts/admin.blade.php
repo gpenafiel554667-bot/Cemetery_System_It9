@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cemetery Management System - Admin</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 </head>
 <body class="bg-gray-100 font-sans text-gray-800">
 
@@ -129,5 +131,18 @@
         </div>
     </div>
 
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('select').forEach(function(el) {
+                if (!el.classList.contains('no-select')) {
+                    new TomSelect(el, {
+                        placeholder: el.options[0]?.text || 'Select...',
+                        allowEmptyOption: true,
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>

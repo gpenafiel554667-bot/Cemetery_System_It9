@@ -15,5 +15,14 @@ class Inquiry extends Model
         'contact_number',
         'message',
         'status',
+        'response',
+        'responded_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'responded_at' => 'datetime',
+        ];
+    }
 }

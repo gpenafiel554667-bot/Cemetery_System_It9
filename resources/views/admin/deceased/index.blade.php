@@ -9,6 +9,11 @@
     <a href="{{ route('admin.deceased.create') }}" class="bg-gray-900 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-700 transition">Add Record</a>
 </div>
 
+<!-- Search (live filter) -->
+<div class="mb-4">
+    <input type="text" id="searchInput" placeholder="Search deceased..." onkeyup="liveSearch()" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400">
+</div>
+
 <!-- Stats -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
     <div class="bg-white rounded-xl border border-gray-200 p-5">
@@ -87,9 +92,21 @@
             @endforelse
         </tbody>
     </table>
-    <div class="p-4 border-t border-gray-100">{{ $deceased->links() }}</div>
+<div class="p-4 border-t border-gray-100">{{ $deceased->links() }}</div>
 </div>
 
+<script>
+    function liveSearch() {
+        let input = document.getElementById('searchInput').value.toLowerCase();
+        let rows = document.querySelectorAll('tbody tr');
+
+        rows.forEach(function(row) {
+            let nameCell = row.querySelector('td');
+            let nameText = (nameCell ? nameCell.textContent : '').toLowerCase();
+            row.style.display = nameText.includes(input) ? '' : 'none';
+        });
+    }
+</script>
 
 <!-- Edit Modal -->
 <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" style="display:none;">

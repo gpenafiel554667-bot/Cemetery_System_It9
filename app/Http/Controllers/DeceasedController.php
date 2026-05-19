@@ -17,11 +17,16 @@ class DeceasedController extends Controller
         return auth()->user()->isAdmin() ? 'admin' : 'staff';
     }
 
-    public function index()
+    public function index(Request $request)
     {
+        // Live JS filter on the view handles searching while typing.
+        // Keep server-side listing unfiltered by `search` query.
         $deceased = Deceased::latest()->paginate(10);
+
         return view($this->getPrefix().'.deceased.index', compact('deceased'));
     }
+
+
 
     public function create()
     {
@@ -88,18 +93,21 @@ class DeceasedController extends Controller
         return redirect()->route($this->getRoute().'.deceased.index')->with('success', 'Deceased record deleted successfully!');
     }
 
- public function search(Request $request)
-{
-    $query = $request->get('query');
 
-    $deceased = Deceased::with(['burial.lot', 'families'])
-        ->when($query, function($q) use ($query) {
-            $q->where('first_name', 'like', "%{$query}%")
-              ->orWhere('last_name', 'like', "%{$query}%");
-        })
-        ->latest()
-        ->paginate(10);
+    // Public search endpoint (used by the public site)
+    public function search(Request $request)
+    {
+        $query = $request->get('query');
 
-    return view('public.search', compact('deceased', 'query'));
-}
+        $deceased = Deceased::with(['burial.lot', 'families'])
+            ->when($query, function ($q) use ($query) {
+                $q->where('first_name', 'like', "%{$query}%")
+                    ->orWhere('last_name', 'like', "%{$query}%");
+            })
+            ->latest()
+            ->paginate(10);
+
+        return view('public.search', compact('deceased', 'query'));
+    }
+
 }

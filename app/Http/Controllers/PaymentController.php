@@ -32,7 +32,7 @@ class PaymentController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'burial_id' => 'required|exists:burials,id',
             'amount' => 'required|numeric',
             'type' => 'required|in:burial_fee,maintenance_fee,other',
@@ -41,7 +41,7 @@ class PaymentController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        Payment::create($request->all());
+        Payment::create($validated);
 
         return redirect()->route($this->getRoute().'.payments.index')->with('success', 'Payment recorded successfully!');
     }
@@ -60,8 +60,8 @@ class PaymentController extends Controller
 
     public function update(Request $request, Payment $payment)
     {
-        $request->validate([
-            'burial_id' => 'required|exists:burials,id',
+        $validated = $request->validate([
+            'burial_id' => 'sometimes|required|exists:burials,id',
             'amount' => 'required|numeric',
             'type' => 'required|in:burial_fee,maintenance_fee,other',
             'status' => 'required|in:paid,unpaid,partial',
@@ -69,7 +69,7 @@ class PaymentController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $payment->update($request->all());
+        $payment->update($validated);
 
         return redirect()->route($this->getRoute().'.payments.index')->with('success', 'Payment updated successfully!');
     }

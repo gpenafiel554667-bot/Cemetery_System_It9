@@ -61,7 +61,7 @@
                 <td class="px-6 py-4">
                     <div class="flex gap-2">
 
-<button type="button" onclick="openEditPaymentModal({{ $payment->id }}, '{{ $payment->type }}', '{{ $payment->amount }}', '{{ $payment->status }}', '{{ optional($payment->payment_date)->format('Y-m-d') }}')" class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-100 transition">Edit</button>
+<button type="button" onclick="openEditPaymentModal({{ $payment->id }}, @js($payment->type), @js($payment->amount), @js($payment->status), @js(optional($payment->payment_date)->format('Y-m-d')))" class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-100 transition">Edit</button>
 
                         <button onclick="openDeletePaymentModal({{ $payment->id }})" class="bg-red-50 text-red-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-red-100 transition">Delete</button>
 
@@ -92,7 +92,11 @@
             <div class="grid grid-cols-2 gap-4">
                 <div class="col-span-2">
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Type</label>
-                    <input type="text" name="type" id="edit_payment_type" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" required>
+                    <select name="type" id="edit_payment_type" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" required>
+                        <option value="burial_fee">Burial Fee</option>
+                        <option value="maintenance_fee">Maintenance Fee</option>
+                        <option value="other">Other</option>
+                    </select>
                 </div>
                 <div class="col-span-2">
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Amount</label>
