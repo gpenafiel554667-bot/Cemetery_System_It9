@@ -10,20 +10,20 @@
         @csrf @method('PUT')
         <div class="grid grid-cols-2 gap-4">
             <div class="col-span-2">
-                <label class="block text-gray-700 font-semibold mb-1">Burial (Deceased)</label>
-                <select name="burial_id" class="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400" required>
+                <label class="block text-gray-700 font-semibold mb-1">Burial (Deceased / Lot)</label>
+                <select name="burial_id" id="burial_id" class="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400" required>
                     <option value="">-- Select Burial --</option>
                     @foreach($burials as $burial)
-                        <option value="{{ $burial->id }}" {{ old('burial_id', $payment->burial_id) == $burial->id ? 'selected' : '' }}>
-                            {{ $burial->deceased->first_name }} {{ $burial->deceased->last_name }} — {{ $burial->burial_date }}
+                        <option value="{{ $burial->id }}" data-amount="{{ $burial->lot->price }}" {{ old('burial_id', $payment->burial_id) == $burial->id ? 'selected' : '' }}>
+                            {{ $burial->deceased->first_name }} {{ $burial->deceased->last_name }} - Lot {{ $burial->lot->section }}-{{ $burial->lot->row }}-{{ $burial->lot->lot_number }} - PHP {{ number_format($burial->lot->price, 2) }}
                         </option>
                     @endforeach
                 </select>
                 @error('burial_id')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
             </div>
             <div>
-                <label class="block text-gray-700 font-semibold mb-1">Amount (₱)</label>
-                <input type="number" step="0.01" name="amount" value="{{ old('amount', $payment->amount) }}" class="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400" required>
+                <label class="block text-gray-700 font-semibold mb-1">Amount (PHP)</label>
+                <input type="number" step="0.01" name="amount" id="amount" value="{{ old('amount', $payment->amount) }}" class="w-full border rounded-lg px-4 py-2 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400" readonly required>
                 @error('amount')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
             </div>
             <div>
@@ -63,4 +63,17 @@
         </div>
     </form>
 </div>
+
+<script>
+    const burialSelect = document.getElementById('burial_id');
+    const amountInput = document.getElementById('amount');
+
+    function syncAmountFromBurial() {
+        const selected = burialSelect.options[burialSelect.selectedIndex];
+        amountInput.value = selected?.dataset.amount || '';
+    }
+
+    burialSelect.addEventListener('change', syncAmountFromBurial);
+    syncAmountFromBurial();
+</script>
 @endsection
